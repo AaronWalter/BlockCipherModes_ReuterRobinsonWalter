@@ -1,8 +1,8 @@
 import java.io.*;
 import java.util.Scanner;
-
+import java.util.Random;
 public class BlockCipherModes {
-
+    
     public static void main(String[] args) {
         //String inFileName = args[0];
        String  inFileName = "src\\data.txt";
@@ -119,4 +119,18 @@ public class BlockCipherModes {
         }
         return result;
     }
+
+    //------------------Methods Used by Different Modes--------------------------------//
+
+    private static String generateRandomIV() {
+        String randomIV = "";
+        Random rand = new Random();
+        for (int i=0; i < 35; i++){
+            int randomBit =  rand.nextInt(2);
+            String singleBit = String.valueOf(randomBit);
+            randomIV = singleBit.concat(randomIV);
+        }
+        return randomIV;
+    }
 }
+
