@@ -34,6 +34,53 @@ public class BlockCipherModes {
     private static void decrypt(String ciphertext, String key, String initializationVector, int mode) {
 
     }
+    private static String shiftBlock(String block){
+        if(block.length() < 35){
+            return "failure";
+        }
+        String first32 = block.substring(0,32);
+        String last3 = block.substring(32,35);
+        String shifted =  last3 + first32;
+        return shifted;
+        }
+    //DECRYPTION//
+    private static String unShiftBlock(String block){
+          if(block.length() < 35){
+            return "failure";
+        }
+        String first3 = block.substring(0,3);
+        String last32 = block.substring(3,35);
+        String unshifted = last32 + first3;
+        return unshifted;
+    }
+    //USED IN BOTH//
+    public static String xorStrings(String blockString, String keyString){
+        String result = "";
+        String  blockChar = "";
+        String keyChar = "";
+        for(int i = 0; i < 35; i++){
+            blockChar +=  blockString.charAt(i);
+            keyChar +=  keyString.charAt(i);
+            if(blockChar.length() == 7){
+                result = result + xorChars(blockChar,keyChar);
+                blockChar = "";
+                keyChar = "";
+            }
+        }
+        return result;
+    }
+
+    private static String xorChars(String blockChar, String keyChar){
+        int blockInt = Integer.parseInt(blockChar,2);
+        int keyInt = Integer.parseInt(keyChar,2);
+        int xorResult = blockInt ^ keyInt; /// the ^ is an xor operator
+        String resultBinary = Integer.toBinaryString(xorResult);
+        while(resultBinary.length() < 7){
+            resultBinary = "0" + resultBinary;
+        }
+        return resultBinary;
+    }
+
     //------------------BIT CONVERSION METHODS--------------------------------//
     private static String stringTo7Bit(String textToChange){
         String result = "";
@@ -68,7 +115,7 @@ public class BlockCipherModes {
             result = result + characterToAdd;
             textToConvert = "";
             }
-            
+        
         }
         return result;
     }
