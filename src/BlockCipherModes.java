@@ -22,14 +22,19 @@ public class BlockCipherModes {
             String binaryKey = stringTo7Bit(key);
             System.out.println(binaryKey);
             System.out.println(plaintext);
-            //TESTING
-            
-            String cipherText = stringTo7Bit("Hello");
-            cipherText = blockCipher(cipherText, binaryKey);
-            System.out.println(cipherText +" " + binaryToString(cipherText));
 
-            cipherText = decipherBlock(cipherText, binaryKey);
-            System.out.println(cipherText +" " + binaryToString(cipherText));
+            //TESTING
+            String testText = "help me";
+            testText = addNullChar(testText);
+            System.out.println(testText);
+            testText = stringTo7Bit(testText);
+            System.out.println(testText);
+        
+           // cipherText = blockCipher(cipherText, binaryKey);
+            //System.out.println(cipherText +" " + binaryToString(cipherText));
+
+            //cipherText = decipherBlock(cipherText, binaryKey);
+           // System.out.println(cipherText +" " + binaryToString(cipherText));
 
             
            // String originalText = binaryToString(binaryText);
@@ -107,6 +112,13 @@ public class BlockCipherModes {
     }
 
     //------------------BIT CONVERSION METHODS--------------------------------//
+    private static String addNullChar(String text){
+        String result = text;
+        while(result.length()%5 != 0){
+            result = result + '\u0000';
+        }
+        return result;
+    }
     private static String stringTo7Bit(String textToChange){
         String result = "";
         int lengthOfString = textToChange.length();
