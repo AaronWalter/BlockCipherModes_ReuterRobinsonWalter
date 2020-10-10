@@ -1,6 +1,8 @@
 import java.io.*;
 import java.util.Scanner;
 import java.util.Random;
+
+
 public class BlockCipherModes {
     
     public static void main(String[] args) {
@@ -17,11 +19,21 @@ public class BlockCipherModes {
             }
             System.out.println(iv);
             System.out.println(key);
+            String binaryKey = stringTo7Bit(key);
+            System.out.println(binaryKey);
             System.out.println(plaintext);
-            String binaryText = stringTo7Bit(plaintext);
-            System.out.println(binaryText);
-            String originalText = binaryToString(binaryText);
-            System.out.println(originalText +"\n" + plaintext.equals(originalText));
+            //TESTING
+            
+            String cipherText = stringTo7Bit("Hello");
+            cipherText = blockCipher(cipherText, binaryKey);
+            System.out.println(cipherText +" " + binaryToString(cipherText));
+
+            cipherText = decipherBlock(cipherText, binaryKey);
+            System.out.println(cipherText +" " + binaryToString(cipherText));
+
+            
+           // String originalText = binaryToString(binaryText);
+          //  System.out.println(originalText +"\n" + plaintext.equals(originalText));
         } catch(FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -33,6 +45,19 @@ public class BlockCipherModes {
 
     private static void decrypt(String ciphertext, String key, String initializationVector, int mode) {
 
+    }
+    //----------------BLOCK CIPHER METHODS--------------------------------
+    private static String blockCipher(String block, String key){
+        String cipherText = "";
+        cipherText = shiftBlock(block);
+        cipherText = xorStrings(cipherText, key);
+        return cipherText;
+    }
+    private static String decipherBlock(String block, String key){
+        String plaintext = "";
+        plaintext = xorStrings(block, key);
+        plaintext = unShiftBlock(plaintext);
+        return plaintext;
     }
     private static String shiftBlock(String block){
         if(block.length() < 35){
@@ -94,6 +119,7 @@ public class BlockCipherModes {
         }
         return result;
     }
+
     private static String charTo7bit(int valueOfChar){
         String binaryString = Integer.toBinaryString(valueOfChar);
         if(binaryString.length() > 7){
