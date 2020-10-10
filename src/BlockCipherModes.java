@@ -1,5 +1,6 @@
 import java.io.*;
 import java.util.Scanner;
+import java.util.ArrayList;
 import java.util.Random;
 
 
@@ -14,24 +15,32 @@ public class BlockCipherModes {
             String iv = sc.nextLine();
             String key = sc.nextLine();
             String plaintext = "";
-            while(sc.hasNext()) {
-                plaintext += sc.next();
+            while(sc.hasNextLine()) {
+                plaintext += sc.nextLine();// I think nextLine should be used to preserve spaces
             }
             System.out.println(iv);
             System.out.println(key);
             String binaryKey = stringTo7Bit(key);
             System.out.println(binaryKey);
             System.out.println(plaintext);
+            
+            String editedtext = addNullChar(plaintext);
+            editedtext = stringTo7Bit(editedtext);
+            
+            ArrayList<String> blocks = createBlocks(editedtext);
+            String cipherText ="";
 
-            //TESTING
-            String testText = "help me";
-            testText = addNullChar(testText);
-            System.out.println(testText);
-            testText = stringTo7Bit(testText);
-            System.out.println(testText);
-        
-           // cipherText = blockCipher(cipherText, binaryKey);
-            //System.out.println(cipherText +" " + binaryToString(cipherText));
+            for(int i =0; i < blocks.size();i++){
+                cipherText = cipherText + blockCipher(blocks.get(i), binaryKey);
+            }
+            System.out.println(cipherText +" " + binaryToString(cipherText));
+            blocks.clear();
+            blocks = createBlocks(cipherText);
+            String decipherText = "";
+            for(int i = 0; i <blocks.size();i++){
+                decipherText = decipherText + decipherBlock(blocks.get(i),binaryKey);
+            }
+            System.out.println(decipherText + " " + binaryToString(decipherText));
 
             //cipherText = decipherBlock(cipherText, binaryKey);
            // System.out.println(cipherText +" " + binaryToString(cipherText));
@@ -52,29 +61,41 @@ public class BlockCipherModes {
 
     }
     //----------------BLOCK CIPHER METHODS--------------------------------
-    private static String blockCipher(String block, String key){
+    private static ArrayList<String> createBlocks(String binaryText){
+        ArrayList<String> blocks = new ArrayList<>();
+        String blockToAdd = "";
+        for(int i = 0; i < binaryText.length(); i++){
+            blockToAdd = blockToAdd + binaryText.charAt(i);
+            if(blockToAdd.length()==35){
+                blocks.add(blockToAdd);
+                blockToAdd = "";
+            }
+        }
+        return blocks; 
+    }
+    private static String blockCipher(String block, String key){// encrypted one block of text
         String cipherText = "";
         cipherText = shiftBlock(block);
         cipherText = xorStrings(cipherText, key);
         return cipherText;
     }
-    private static String decipherBlock(String block, String key){
+    private static String decipherBlock(String block, String key){// decrypts one block of text
         String plaintext = "";
         plaintext = xorStrings(block, key);
         plaintext = unShiftBlock(plaintext);
         return plaintext;
     }
-    private static String shiftBlock(String block){
+    private static String shiftBlock(String block){// shifts a block by 3
         if(block.length() < 35){
             return "failure";
-        }
+        }// this shift is actually a swap but does the same thing inpractice
         String first32 = block.substring(0,32);
         String last3 = block.substring(32,35);
         String shifted =  last3 + first32;
         return shifted;
         }
     //DECRYPTION//
-    private static String unShiftBlock(String block){
+    private static String unShiftBlock(String block){// same process as shiftblock
           if(block.length() < 35){
             return "failure";
         }
