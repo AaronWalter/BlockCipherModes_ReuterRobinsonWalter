@@ -167,7 +167,40 @@ public class BlockCipherModes {
     }
 
     private static String ofb(String plaintext, String binaryKey) {
-        return "";
+        String editedtext = addNullChar(plaintext);
+        editedtext = stringTo7Bit(editedtext);
+
+        ArrayList<String> blocks = createBlocks(editedtext);
+        String cipherText ="";
+
+        String updatedIV = generateRandomIV();
+
+        for(int i =0; i < blocks.size();i++) { 
+            // XOR IV and Key
+            String encryptedIV = xorStrings(updatedIV, binaryKey);
+            updatedIV = encryptedIV;
+            // Get a block from the blockCIpher
+            String encryptedText = blockCipher(blocks.get(i), binaryKey);
+            
+            // XOR IV and 35 bits from the plaintext
+            cipherText = cipherText + xorStrings(encryptedIV, encryptedText );
+        }
+        System.out.println(cipherText +" " + binaryToString(cipherText));
+        blocks.clear();
+        blocks = createBlocks(cipherText);
+        String decipherText = "";
+        for(int i =0; i < blocks.size();i++) { 
+            // XOR IV and Key
+            String encryptedIV = xorStrings(updatedIV, binaryKey);
+            updatedIV = encryptedIV;
+            // Get a block from the blockCIpher
+            String encryptedText = blockCipher(blocks.get(i), binaryKey);
+            
+            // XOR IV and 35 bits from the plaintext
+            decipherText = decipherText + xorStrings(encryptedIV, encryptedText );
+        }
+        System.out.println(decipherText + " " + binaryToString(decipherText));
+        return cipherText;
     }
 
     private static String ctr(String plaintext, String binaryKey) {
