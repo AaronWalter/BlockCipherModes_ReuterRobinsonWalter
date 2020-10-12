@@ -179,11 +179,11 @@ public class BlockCipherModes {
             // XOR IV and Key
             String encryptedIV = xorStrings(updatedIV, binaryKey);
             updatedIV = encryptedIV;
-            // Get a block from the blockCIpher
+            // Get a block from the blockCipher
             String encryptedText = blockCipher(blocks.get(i), binaryKey);
             
             // XOR IV and 35 bits from the plaintext
-            cipherText = cipherText + xorStrings(encryptedIV, encryptedText );
+            cipherText = cipherText + xorStrings(encryptedIV, encryptedText);
         }
         System.out.println(cipherText +" " + binaryToString(cipherText));
         blocks.clear();
