@@ -37,7 +37,7 @@ public class BlockCipherModes {
             } else if (mode == 1) {
                 //cipherText = cbc(plaintext, binaryKey);
             } else if (mode == 2) {
-                //cipherText = cfb(plaintext, binaryKey);
+                cipherText = cfb(plaintext, binaryKey);
             } else if (mode == 3) {
                 //cipherText = ofb(plaintext, binaryKey);
             } else if (mode == 4) {
@@ -128,7 +128,42 @@ public class BlockCipherModes {
     }
 
     private static String cfb(String plaintext, String binaryKey) {
-        return "";
+        String editedtext = addNullChar(plaintext);
+        editedtext = stringTo7Bit(editedtext);
+
+        ArrayList<String> blocks = createBlocks(editedtext);
+        String cipherText ="";
+
+        String updatedIV = generateRandomIV();
+
+        for(int i =0; i < blocks.size();i++) { 
+            // XOR IV and Key
+            String encryptedIV = xorStrings(updatedIV, binaryKey);
+
+            // Get a block from the blockCIpher
+            String encryptedText = blockCipher(blocks.get(i), binaryKey);
+            
+            // XOR IV and 35 bits from the plaintext
+            updatedIV = xorStrings(encryptedIV, encryptedText );
+            cipherText = cipherText + updatedIV;
+        }
+        System.out.println(cipherText +" " + binaryToString(cipherText));
+        blocks.clear();
+        blocks = createBlocks(cipherText);
+        String decipherText = "";
+        for(int i =0; i < blocks.size();i++) { 
+            // XOR IV and Key
+            String encryptedIV = xorStrings(updatedIV, binaryKey);
+
+            // Get a block from the blockCIpher
+            String encryptedText = blockCipher(blocks.get(i), binaryKey);
+            
+            // XOR IV and 35 bits from the plaintext
+            updatedIV = xorStrings(encryptedIV, encryptedText );
+            decipherText = decipherText + updatedIV;
+        }
+        System.out.println(decipherText + " " + binaryToString(decipherText));
+        return cipherText;
     }
 
     private static String ofb(String plaintext, String binaryKey) {
