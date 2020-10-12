@@ -39,7 +39,7 @@ public class BlockCipherModes {
             } else if (mode == 2) {
                 cipherText = cfb(plaintext, binaryKey);
             } else if (mode == 3) {
-                //cipherText = ofb(plaintext, binaryKey);
+                cipherText = ofb(plaintext, binaryKey);
             } else if (mode == 4) {
                 //cipherText = ctr(plaintext, binaryKey);
             } else {
@@ -167,8 +167,7 @@ public class BlockCipherModes {
     }
 
     private static String ofb(String plaintext, String binaryKey) {
-        String editedtext = addNullChar(plaintext);
-        editedtext = stringTo7Bit(editedtext);
+        String editedtext = stringTo7Bit(plaintext);
 
         ArrayList<String> blocks = createBlocks(editedtext);
         String cipherText ="";
