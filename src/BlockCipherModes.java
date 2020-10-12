@@ -30,23 +30,22 @@ public class BlockCipherModes {
             System.out.println(binaryKey);
             System.out.println(plaintext);
 
-            String editedtext = addNullChar(plaintext);
-            editedtext = stringTo7Bit(editedtext);
+            String cipherText = "";
 
-            ArrayList<String> blocks = createBlocks(editedtext);
-            String cipherText ="";
-
-            for(int i =0; i < blocks.size();i++){
-                cipherText = cipherText + blockCipher(blocks.get(i), binaryKey);
+            if (mode == 0) {
+                cipherText = ecb(plaintext, binaryKey);
+            } else if (mode == 1) {
+                //cipherText = cbc(plaintext, binaryKey);
+            } else if (mode == 2) {
+                //cipherText = cfb(plaintext, binaryKey);
+            } else if (mode == 3) {
+                //cipherText = ofb(plaintext, binaryKey);
+            } else if (mode == 4) {
+                //cipherText = ctr(plaintext, binaryKey);
+            } else {
+                System.out.println("Invalid mode");
             }
-            System.out.println(cipherText +" " + binaryToString(cipherText));
-            blocks.clear();
-            blocks = createBlocks(cipherText);
-            String decipherText = "";
-            for(int i = 0; i <blocks.size();i++){
-                decipherText = decipherText + decipherBlock(blocks.get(i),binaryKey);
-            }
-            System.out.println(decipherText + " " + binaryToString(decipherText));
+            System.out.println(cipherText);
 
             //cipherText = decipherBlock(cipherText, binaryKey);
            // System.out.println(cipherText +" " + binaryToString(cipherText));
@@ -100,6 +99,45 @@ public class BlockCipherModes {
         String shifted =  last3 + first32;
         return shifted;
         }
+
+        //MODES//
+
+    private static String ecb(String plaintext, String binaryKey) {
+        String editedtext = addNullChar(plaintext);
+        editedtext = stringTo7Bit(editedtext);
+
+        ArrayList<String> blocks = createBlocks(editedtext);
+        String cipherText ="";
+
+        for(int i =0; i < blocks.size();i++){
+            cipherText = cipherText + blockCipher(blocks.get(i), binaryKey);
+        }
+        System.out.println(cipherText +" " + binaryToString(cipherText));
+        blocks.clear();
+        blocks = createBlocks(cipherText);
+        String decipherText = "";
+        for(int i = 0; i <blocks.size();i++){
+            decipherText = decipherText + decipherBlock(blocks.get(i),binaryKey);
+        }
+        System.out.println(decipherText + " " + binaryToString(decipherText));
+        return cipherText;
+    }
+
+    private static String cbc(String plaintext, String binaryKey) {
+        return "";
+    }
+
+    private static String cfb(String plaintext, String binaryKey) {
+        return "";
+    }
+
+    private static String ofb(String plaintext, String binaryKey) {
+        return "";
+    }
+
+    private static String ctr(String plaintext, String binaryKey) {
+        return "";
+    }
     //DECRYPTION//
     private static String unShiftBlock(String block){// same process as shiftblock
           if(block.length() < 35){
