@@ -94,7 +94,7 @@ public class BlockCipherModes {
         }
         return result;
     }
-    private static String charTo7bit(int valueOfChar){
+    private static String charTo7bit(int valueOfChar){ //does the padding for stringTo7Bit
         String binaryString = Integer.toBinaryString(valueOfChar);
         if(binaryString.length() > 7){
             return "Something went very wrong"; 
@@ -104,7 +104,7 @@ public class BlockCipherModes {
         }
         return binaryString;
     }
-    private static String binaryToString(String binaryText){
+    private static String binaryToString(String binaryText){ //interprets a string of zeroes and ones as a string of 7-bit ASCII characters
         String textToConvert = "";
         String result = "";
         for(int i = 0; i < binaryText.length(); i++){
@@ -115,7 +115,6 @@ public class BlockCipherModes {
             result = result + characterToAdd;
             textToConvert = "";
             }
-        
         }
         return result;
     }
