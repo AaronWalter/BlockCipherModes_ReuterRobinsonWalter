@@ -6,6 +6,12 @@ public class BlockCipherModes {
     public static void main(String[] args) {
         //String inFileName = args[0];
        String  inFileName = "src\\data.txt";
+       int mode = Integer.parseInt(args[1]);
+       //mode 0 = ecb
+        //mode 1 = cbc
+        //mode 2 = cfb
+        //mode 3 = ofb
+        //mode 4 = ctr
         try {
             File toRead = new File(inFileName);
             Scanner sc = new Scanner(toRead);
