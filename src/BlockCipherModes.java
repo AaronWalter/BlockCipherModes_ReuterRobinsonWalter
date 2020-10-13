@@ -80,6 +80,10 @@ public class BlockCipherModes {
                 blockToAdd = "";
             }
         }
+        //check for if padding was not required.
+        if(blockToAdd.length() > 0 && blockToAdd.length()<35){
+            blocks.add(blockToAdd);
+        }
         return blocks;
     }
     private static String blockCipher(String block, String key){// encrypted one block of text
@@ -167,34 +171,36 @@ public class BlockCipherModes {
         String cipherText ="";
 
         String updatedIV = generateRandomIV();
+        String originalIV = updatedIV;
 
         for(int i =0; i < blocks.size();i++) { 
             // XOR IV and Key
-            String encryptedIV = xorStrings(updatedIV, binaryKey);
+            String encryptedIV = blockCipher(updatedIV, binaryKey);
 
-            // Get a block from the blockCIpher
-            String encryptedText = blockCipher(blocks.get(i), binaryKey);
+            String encryptedText = xorStrings(blocks.get(i), encryptedIV);
             
-            // XOR IV and 35 bits from the plaintext
-            updatedIV = xorStrings(encryptedIV, encryptedText );
-            cipherText = cipherText + updatedIV;
+            updatedIV = encryptedText;
+            cipherText = cipherText + encryptedText;
         }
         System.out.println(cipherText +" " + binaryToString(cipherText));
         blocks.clear();
         blocks = createBlocks(cipherText);
+        updatedIV = originalIV;
         String decipherText = "";
         for(int i =0; i < blocks.size();i++) { 
             // XOR IV and Key
-            String encryptedIV = xorStrings(updatedIV, binaryKey);
+            String encryptedIV = blockCipher(updatedIV, binaryKey);
 
             // Get a block from the blockCIpher
-            String encryptedText = blockCipher(encryptedIV, blocks.get(i));
-            
+            String encryptedText = xorStrings(blocks.get(i), encryptedIV);
+
             // XOR IV and 35 bits from the plaintext
+            updatedIV = blocks.get(i);
+            decipherText = decipherText + encryptedText;
             updatedIV = xorStrings(blocks.get(i), binaryKey);
             decipherText = decipherText + updatedIV;
         }
-        System.out.println(decipherText + " " + binaryToString(decipherText));
+        System.out.println("DECIPHERED: "  + " " + binaryToString(decipherText));
         return cipherText;
     }
 
@@ -205,32 +211,33 @@ public class BlockCipherModes {
         String cipherText ="";
 
         String updatedIV = generateRandomIV();
-
+        String originalIV = updatedIV;
         for(int i =0; i < blocks.size();i++) { 
             // XOR IV and Key
-            String encryptedIV = xorStrings(updatedIV, binaryKey);
+            String encryptedIV = blockCipher(updatedIV, binaryKey);
             updatedIV = encryptedIV;
-            // Get a block from the blockCipher
-            String encryptedText = blockCipher(blocks.get(i), binaryKey);
-            
+
             // XOR IV and 35 bits from the plaintext
-            cipherText = cipherText + xorStrings(encryptedIV, encryptedText);
+            String encryptedText = xorStrings(blocks.get(i), encryptedIV);
+
+            cipherText = cipherText + encryptedText;
         }
-        System.out.println(cipherText +" " + binaryToString(cipherText));
+        System.out.println(" CipherText " + " "+ binaryToString(cipherText));
         blocks.clear();
         blocks = createBlocks(cipherText);
         String decipherText = "";
-        for(int i =0; i < blocks.size();i++) { 
+        updatedIV = originalIV;
+        for(int i =0; i < blocks.size();i++) {
             // XOR IV and Key
-            String encryptedIV = xorStrings(updatedIV, binaryKey);
+            String encryptedIV = blockCipher(updatedIV, binaryKey);
             updatedIV = encryptedIV;
-            // Get a block from the blockCIpher
-            String encryptedText = blockCipher(blocks.get(i), binaryKey);
-            
+
             // XOR IV and 35 bits from the plaintext
-            decipherText = decipherText + xorStrings(encryptedIV, encryptedText );
+            String encryptedText = xorStrings(blocks.get(i), encryptedIV);
+
+            decipherText = decipherText + encryptedText;
         }
-        System.out.println(decipherText + " " + binaryToString(decipherText));
+        System.out.println( " DECIPHER TEXT "+ " " + binaryToString(decipherText));
         return cipherText;
     }
 
@@ -252,7 +259,7 @@ public class BlockCipherModes {
         String result = "";
         String  blockChar = "";
         String keyChar = "";
-        for(int i = 0; i < 35; i++){
+        for(int i = 0; i < blockString.length(); i++){
             blockChar +=  blockString.charAt(i);
             keyChar +=  keyString.charAt(i);
             if(blockChar.length() == 7){
