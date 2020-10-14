@@ -7,9 +7,10 @@ import java.util.Random;
 public class BlockCipherModes {
 
     public static void main(String[] args) {
-        String inFileName = "src\\"+args[0];
-       //String  inFileName = "src\\data.txt";
-       int mode = Integer.parseInt(args[1]);
+        //String inFileName = "src\\"+args[0];
+       String  inFileName = "src\\ofbData.txt";
+        // String  inFileName = "src\\cbcData.txt";
+       int mode = 3;
        //mode 0 = ecb
         //mode 1 = cbc
         //mode 2 = cfb
@@ -24,6 +25,7 @@ public class BlockCipherModes {
             while(sc.hasNextLine()) {
                 plaintext += sc.nextLine();// I think nextLine should be used to preserve spaces
             }
+            System.out.println(plaintext.length());
             System.out.println(iv);
             System.out.println(key);
             String binaryKey = stringTo7Bit(key);
@@ -120,7 +122,7 @@ public class BlockCipherModes {
         for(int i =0; i < blocks.size();i++){
             cipherText = cipherText + blockCipher(blocks.get(i), binaryKey);
         }
-        System.out.println(cipherText +" " + binaryToString(cipherText));
+        System.out.println("CIPHER " + cipherText +" " + binaryToString(cipherText));
         blocks.clear();
         blocks = createBlocks(cipherText);
         String decipherText = "";
@@ -212,6 +214,7 @@ public class BlockCipherModes {
 
         String updatedIV = generateRandomIV();
         String originalIV = updatedIV;
+        System.out.println("IV: " + originalIV);
         for(int i =0; i < blocks.size();i++) { 
             // XOR IV and Key
             String encryptedIV = blockCipher(updatedIV, binaryKey);
@@ -222,7 +225,7 @@ public class BlockCipherModes {
 
             cipherText = cipherText + encryptedText;
         }
-        System.out.println(" CipherText " + " "+ binaryToString(cipherText));
+        System.out.println(" CIPHER " + cipherText + "\n" + binaryToString(cipherText));
         blocks.clear();
         blocks = createBlocks(cipherText);
         String decipherText = "";
