@@ -372,6 +372,20 @@ public class BlockCipherModes {
         return result;
     }
 
+    private static String changeBitInBinaryText(String binaryText) {
+        char zero = '0';
+        char one = '1';
+        if(binaryText.charAt(0) == zero) {
+            binaryText = one + binaryText.substring(1);
+            
+        }
+        else {
+            binaryText = zero + binaryText.substring(1);
+        }
+        System.out.println("Changed BinaryText" + binaryText);
+    return binaryText;
+    }
+
     //------------------Methods Used by Different Modes--------------------------------//
 
     private static String generateRandomIV() {
