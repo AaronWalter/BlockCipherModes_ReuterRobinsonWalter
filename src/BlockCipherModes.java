@@ -315,6 +315,21 @@ public class BlockCipherModes {
         return result;
     }
 
+    public static int xorStringsToFindDifferences(String encryptedText, String encryptedTextWithBitChange){
+        int numberOfDifferences = 0;
+        Long encryptedTextLong = Long.parseLong(encryptedText,2);
+        Long encryptedTextWithBitChangeLong =Long.parseLong(encryptedTextWithBitChange,2);
+        Long result = encryptedTextWithBitChangeLong ^ encryptedTextLong;
+        String result2 = Long.toBinaryString(result);
+        for (int i =0; i < result2.length(); i++) {
+            if ( result2.charAt(i) ==1) {
+                numberOfDifferences++;
+            }
+        }
+       System.out.println("Result of xoring the two plaintexts " + result2);
+        return numberOfDifferences;
+    }
+
     private static String xorChars(String blockChar, String keyChar){
         int blockInt = Integer.parseInt(blockChar,2);
         int keyInt = Integer.parseInt(keyChar,2);
