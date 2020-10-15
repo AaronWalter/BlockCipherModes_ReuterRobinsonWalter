@@ -1,5 +1,0 @@
-1010010100101010110101010011010
-Merci
-This is a line of 
-Text which will be encrypted 
-and it will be so

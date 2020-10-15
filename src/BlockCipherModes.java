@@ -8,9 +8,9 @@ public class BlockCipherModes {
 
     public static void main(String[] args) {
         //String inFileName = "src\\"+args[0];
-       String  inFileName = "src\\ofbData.txt";
+       String  inFileName = "src\\ctrData.txt";
         // String  inFileName = "src\\cbcData.txt";
-       int mode = 3;
+       int mode = 4;
        //mode 0 = ecb
         //mode 1 = cbc
         //mode 2 = cfb
@@ -47,7 +47,11 @@ public class BlockCipherModes {
             } else if (mode == 3) {
                 cipherText = ofb(plaintext, binaryKey);
             } else if (mode == 4) {
-                //cipherText = ctr(plaintext, binaryKey);
+                String iv4 = generateRandomIV();
+                cipherText = ctr(plaintext, binaryKey, iv4);
+                System.out.println(plaintext);
+                System.out.println(cipherText);
+                System.out.println(binaryToString(ctrDecrypt(cipherText,binaryKey,iv4)));
             } else {
                 System.out.println("Invalid mode");
             }
@@ -244,9 +248,46 @@ public class BlockCipherModes {
         return cipherText;
     }
 
-    private static String ctr(String plaintext, String binaryKey) {
-        return "";
+    private static String ctr(String plaintext, String binaryKey, String iv) {
+        //String iv = generateRandomIV();
+        int count = 0;
+        String cipherText = "";
+        iv = makeCountStr(iv,0);
+        String binText = stringTo7Bit(plaintext);
+        ArrayList<String> binStrings = createBlocks(binText);
+        for (String s : binStrings) {
+            String result = blockCipher(iv,binaryKey);
+            cipherText += xorStrings(s,result);
+            count += 1;
+            iv = makeCountStr(iv,count);
+        }
+        return cipherText;
     }
+
+    private static String ctrDecrypt(String cipherBinText, String binaryKey, String iv) {
+        String plaintext = "";
+        int count = 0;
+        iv = makeCountStr(iv,count);
+        ArrayList<String> cipherBlocks = createBlocks(cipherBinText);
+        for(String s : cipherBlocks) {
+            String result = blockCipher(iv,binaryKey);
+            plaintext += xorStrings(s,result);
+            count += 1;
+            iv = makeCountStr(iv,count);
+        }
+        return plaintext;
+    }
+
+        private static String makeCountStr(String iv, int count) {
+            count = count % (2^16);
+            String countStr = Integer.toBinaryString(count);
+            if (countStr.length() < 16) {
+                countStr = "0".repeat(16 - countStr.length()) + countStr;
+            }
+            iv = iv.substring(0, 19) + countStr;
+            return iv;
+        }
+
     //DECRYPTION//
     private static String unShiftBlock(String block){// same process as shiftblock
           if(block.length() < 35){
