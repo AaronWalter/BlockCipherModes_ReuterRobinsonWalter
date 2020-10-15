@@ -8,15 +8,16 @@ public class BlockCipherModes {
 
     public static void main(String[] args) {
         //String inFileName = "src\\"+args[0];
-       String  inFileName = "src\\ctrData.txt";
+       String  inFileName = "src\\cbcToDecrypt.txt";
         // String  inFileName = "src\\cbcData.txt";
-       int mode = 4;
+       int mode = 6;
        //mode 0 = ecb
         //mode 1 = cbc
         //mode 2 = cfb
         //mode 3 = ofb
         //mode 4 = ctr
         //mode 5 decyrpt a specified ofb encryption
+        //mode 6 decrypt cbc encryption
         try {
             File toRead = new File(inFileName);
             Scanner sc = new Scanner(toRead);
@@ -27,8 +28,8 @@ public class BlockCipherModes {
                 plaintext += sc.nextLine();// I think nextLine should be used to preserve spaces
             }
             System.out.println(plaintext.length());
-            System.out.println(iv);
-            System.out.println(key);
+            System.out.println("IV: "+ iv);
+            System.out.println("KEY: "+key);
             String binaryKey = key;
             if(key.length()< 35){
                 binaryKey = stringTo7Bit(key);
@@ -52,7 +53,12 @@ public class BlockCipherModes {
                cipherText = ofb(plaintext, binaryKey);
             } else if (mode == 4) {
                 //cipherText = ctr(plaintext, binaryKey);
-            } else {
+            } else if(mode == 5) {
+                decryptOFB(plaintext, iv, binaryKey);
+            } else if(mode == 6){
+                cbcDecrypt(plaintext, binaryKey, iv);
+            }
+            else {
                 System.out.println("Invalid mode");
             }
             System.out.println(cipherText);
@@ -166,6 +172,7 @@ public class BlockCipherModes {
             nextIV = blocks.get(i);
             plaintext += plaintextChunk;
         }
+        System.out.println("Decrypted: "+binaryToString(plaintext));
         return plaintext;
     }
 
@@ -230,7 +237,7 @@ public class BlockCipherModes {
             cipherText = cipherText + encryptedText;
         }
         System.out.println(" CIPHER " + cipherText + "\n" + binaryToString(cipherText));
-        System.out.println("DECRYPTED" + decryptOFB(cipherText, originalIV, binaryKey));
+        System.out.println("DECRYPTED " + decryptOFB(cipherText, originalIV, binaryKey) +"\n");
         return cipherText;
     }
     private static String decryptOFB(String cipher, String IV, String key){
@@ -248,7 +255,8 @@ public class BlockCipherModes {
 
             decipherText = decipherText + encryptedText;
         }
-        System.out.println( " DECIPHER TEXT "+ " " + binaryToString(decipherText));
+        System.out.println( "DECIPHER TEXT"+ " " + binaryToString(decipherText));
+        System.out.println(decipherText);
         return decipherText;
     }
 
