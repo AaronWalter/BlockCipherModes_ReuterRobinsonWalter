@@ -16,6 +16,7 @@ public class BlockCipherModes {
         //mode 2 = cfb
         //mode 3 = ofb
         //mode 4 = ctr
+        //mode 5 decyrpt a specified ofb encryption
         try {
             File toRead = new File(inFileName);
             Scanner sc = new Scanner(toRead);
@@ -28,12 +29,15 @@ public class BlockCipherModes {
             System.out.println(plaintext.length());
             System.out.println(iv);
             System.out.println(key);
-            String binaryKey = stringTo7Bit(key);
+            String binaryKey = key;
+            if(key.length()< 35){
+                binaryKey = stringTo7Bit(key);
+            }
             System.out.println(binaryKey);
             System.out.println(plaintext);
 
             String cipherText = "";
-
+            String decipherText = "";
             if (mode == 0) {
                 cipherText = ecb(plaintext, binaryKey);
             } else if (mode == 1) {
@@ -45,13 +49,9 @@ public class BlockCipherModes {
             } else if (mode == 2) {
                 cipherText = cfb(plaintext, binaryKey);
             } else if (mode == 3) {
-                cipherText = ofb(plaintext, binaryKey);
+               cipherText = ofb(plaintext, binaryKey);
             } else if (mode == 4) {
-                String iv4 = generateRandomIV();
-                cipherText = ctr(plaintext, binaryKey, iv4);
-                System.out.println(plaintext);
-                System.out.println(cipherText);
-                System.out.println(binaryToString(ctrDecrypt(cipherText,binaryKey,iv4)));
+                //cipherText = ctr(plaintext, binaryKey);
             } else {
                 System.out.println("Invalid mode");
             }
@@ -220,7 +220,7 @@ public class BlockCipherModes {
         String originalIV = updatedIV;
         System.out.println("IV: " + originalIV);
         for(int i =0; i < blocks.size();i++) { 
-            // XOR IV and Key
+            // XOR IV and Key 
             String encryptedIV = blockCipher(updatedIV, binaryKey);
             updatedIV = encryptedIV;
 
@@ -230,13 +230,17 @@ public class BlockCipherModes {
             cipherText = cipherText + encryptedText;
         }
         System.out.println(" CIPHER " + cipherText + "\n" + binaryToString(cipherText));
-        blocks.clear();
-        blocks = createBlocks(cipherText);
+        System.out.println("DECRYPTED" + decryptOFB(cipherText, originalIV, binaryKey));
+        return cipherText;
+    }
+    private static String decryptOFB(String cipher, String IV, String key){
         String decipherText = "";
-        updatedIV = originalIV;
+        ArrayList<String> blocks = createBlocks(cipher);
+        String updatedIV = IV;
+
         for(int i =0; i < blocks.size();i++) {
             // XOR IV and Key
-            String encryptedIV = blockCipher(updatedIV, binaryKey);
+            String encryptedIV = blockCipher(updatedIV, key);
             updatedIV = encryptedIV;
 
             // XOR IV and 35 bits from the plaintext
@@ -245,23 +249,11 @@ public class BlockCipherModes {
             decipherText = decipherText + encryptedText;
         }
         System.out.println( " DECIPHER TEXT "+ " " + binaryToString(decipherText));
-        return cipherText;
+        return decipherText;
     }
 
-    private static String ctr(String plaintext, String binaryKey, String iv) {
-        //String iv = generateRandomIV();
-        int count = 0;
-        String cipherText = "";
-        iv = makeCountStr(iv,0);
-        String binText = stringTo7Bit(plaintext);
-        ArrayList<String> binStrings = createBlocks(binText);
-        for (String s : binStrings) {
-            String result = blockCipher(iv,binaryKey);
-            cipherText += xorStrings(s,result);
-            count += 1;
-            iv = makeCountStr(iv,count);
-        }
-        return cipherText;
+    private static String ctr(String plaintext, String binaryKey) {
+        return "";
     }
 
     private static String ctrDecrypt(String cipherBinText, String binaryKey, String iv) {
