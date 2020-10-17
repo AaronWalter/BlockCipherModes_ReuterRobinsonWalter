@@ -53,9 +53,11 @@ public class BlockCipherModes {
                cipherText = ofb(plaintext, binaryKey);
             } else if (mode == 4) {
                 //cipherText = ctr(plaintext, binaryKey);
-            } else if(mode == 5) {
+            } else if (mode == 5) {
+                cfbDecrypt(cipherText,iv, binaryKey);
+            } else if(mode == 6) {
                 decryptOFB(plaintext, iv, binaryKey);
-            } else if(mode == 6){
+            } else if(mode == 7){
                 cbcDecrypt(plaintext, binaryKey, iv);
             }
             else {
@@ -195,11 +197,15 @@ public class BlockCipherModes {
             updatedIV = encryptedText;
             cipherText = cipherText + encryptedText;
         }
-        System.out.println(cipherText +" " + binaryToString(cipherText));
-        blocks.clear();
-        blocks = createBlocks(cipherText);
-        updatedIV = originalIV;
+        System.out.println(plaintext +" " + binaryToString(cipherText));
+        
+        return cipherText;
+    }
+
+    private static String cfbDecrypt(String cipherText,String IV, String binaryKey) {
         String decipherText = "";
+        ArrayList<String> blocks = createBlocks(cipherText);
+        String updatedIV = IV;
         for(int i =0; i < blocks.size();i++) { 
             // XOR IV and Key
             String encryptedIV = blockCipher(updatedIV, binaryKey);
@@ -208,15 +214,12 @@ public class BlockCipherModes {
             String encryptedText = xorStrings(blocks.get(i), encryptedIV);
 
             // XOR IV and 35 bits from the plaintext
-            updatedIV = blocks.get(i);
             decipherText = decipherText + encryptedText;
-            updatedIV = xorStrings(blocks.get(i), binaryKey);
-            decipherText = decipherText + updatedIV;
+            updatedIV = blocks.get(i);
         }
         System.out.println("DECIPHERED: "  + " " + binaryToString(decipherText));
-        return cipherText;
+        return decipherText;
     }
-
     private static String ofb(String plaintext, String binaryKey) {
         String editedtext = stringTo7Bit(plaintext);
 
@@ -237,7 +240,6 @@ public class BlockCipherModes {
             cipherText = cipherText + encryptedText;
         }
         System.out.println(" CIPHER " + cipherText + "\n" + binaryToString(cipherText));
-        System.out.println("DECRYPTED " + decryptOFB(cipherText, originalIV, binaryKey) +"\n");
         return cipherText;
     }
     private static String decryptOFB(String cipher, String IV, String key){
