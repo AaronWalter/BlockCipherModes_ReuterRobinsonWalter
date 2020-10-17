@@ -7,14 +7,19 @@ import java.util.Random;
 public class BlockCipherModes {
 
     public static void main(String[] args) {
-        String inFileName = "src\\"+args[0];
+        String inFileName = "src/"+args[0];
         int mode = Integer.parseInt(args[1]);
-        int encrypt = Integer.parseInt(args[2]);
         //mode 0 = ecb
         //mode 1 = cbc
         //mode 2 = cfb
         //mode 3 = ofb
         //mode 4 = ctr
+        int encrypt = Integer.parseInt(args[2]);
+        //encrypt 0 = only encrypt
+        //encrypt 1 = only decrypt
+        //encrypt 2 = encrypt a text, then decrypt it, checking that the result is the original plaintext
+        //encrypt 3 = perform the analysis for task 4
+
         try {
             File toRead = new File(inFileName);
             Scanner sc = new Scanner(toRead);
@@ -31,43 +36,56 @@ public class BlockCipherModes {
             if(key.length()< 35){
                 binaryKey = stringTo7Bit(key);
             }
-            /*System.out.println(binaryKey);
-            System.out.println(plaintext);*/
+            System.out.println(binaryKey);
+            System.out.println(plaintext);
 
-            String cipherText = "";
-            String decipherText = "";
-            if (mode == 0) { //ecb
-                if(encrypt == 0) {
-                    cipherText = ecb(plaintext, binaryKey);
-                } else {
-                    decipherText = ecbDecrypt(plaintext,binaryKey);
+            if(encrypt == 0) {
+                String cipherText = encrypt(plaintext,binaryKey,iv,mode);
+                System.out.println("Result of encryption:\n" + cipherText);
+            } else if (encrypt == 1) {
+                String decipherText = decrypt(plaintext,binaryKey,iv,mode);
+                System.out.println("Result of decryption:\n" + decipherText);
+                System.out.println("Decryption to plaintext:\n" + binaryToString(decipherText));
+            } else if (encrypt == 2) {
+                String cipherText = encrypt(plaintext,binaryKey,iv,mode);
+                System.out.println("Result of encryption:\n" + cipherText);
+                String decipherText = decrypt(cipherText,binaryKey,iv,mode);
+                System.out.println("Result of decryption:\n" + decipherText);
+                System.out.println("Decryption to plaintext:\n" + binaryToString(decipherText));
+                System.out.println(stringTo7Bit(plaintext).equals(decipherText));
+                System.out.println(plaintext.equals(binaryToString(decipherText)));
+            } else if (encrypt == 3) {
+                for(int i = 0; i < 5; i++) {
+                    System.out.println("Mode " + i + ":");
+                    String cipherText = encrypt(plaintext,binaryKey,iv,i);
+                    String errorText = changeBitInBinaryText(cipherText);
+                    String decipherText = decrypt(cipherText,binaryKey,iv,i);
+                    String decipherError = decrypt(errorText,binaryKey,iv,i);
+                    ArrayList<String> aBlocks = createBlocks(decipherText);
+                    ArrayList<String> bBlocks = createBlocks(decipherError);
+                    int totalErrors = 0;
+                    int blocksChanged = 0;
+                    for(int j = 0; j<aBlocks.size(); j++) {
+                        String a = aBlocks.get(i);
+                        String b = bBlocks.get(i);
+                        String result = xorStrings(a,b);
+                        int blockErrors = 0;
+                        boolean blockError = false;
+                        for(int k = 0; k<a.length(); k++) {
+                            if (String.valueOf(result.charAt(k)) == "1") {
+                                blockErrors += 1;
+                                blockError = true;
+                            }
+                        }
+                        totalErrors += blockErrors;
+                        if (blockError) {
+                            blocksChanged += 1;
+                        }
+                    }
+                    System.out.println("Total number of bits changed: " + totalErrors);
+                    System.out.println("Number of blocks with an error: " + blocksChanged);
+                    System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
                 }
-            } else if (mode == 1) {
-                //String newiv = generateRandomIV();
-                if(encrypt == 0) {
-                    cipherText = cbc(plaintext, binaryKey, iv);
-                } else {
-                    String plainTextBinary = cbcDecrypt(cipherText, binaryKey, iv);
-                }
-            } else if (mode == 2) {
-                if(encrypt == 0) {
-                    cipherText = cfb(plaintext, binaryKey, iv);
-                } else {
-                    decipherText = cfbDecrypt(plaintext, binaryKey, iv);
-                }
-            } else if (mode == 3) {
-                if (encrypt == 0) {
-                    cipherText = ofb(plaintext, binaryKey, iv);
-                } else {
-                    decipherText = ofbDecrypt(plaintext,binaryKey,iv);
-                }
-            } else if (mode == 4) {
-                if (encrypt == 0) {
-                    cipherText = ctr(plaintext, binaryKey, iv);
-                } else
-                    decipherText = ctrDecrypt(plaintext,binaryKey,iv);
-            } else {
-                System.out.println("Invalid mode");
             }
 
             //cipherText = decipherBlock(cipherText, binaryKey);
@@ -81,12 +99,32 @@ public class BlockCipherModes {
         }
     }
     //------------------ENCRYPTION AND DECRYPTION METHODS----------------------------------//
-    private static void encrypt(String plaintext, String key, String initializationVector, int mode) {
-
+    private static String encrypt(String plaintext, String key, String initializationVector, int mode) {
+        if(mode == 0) {
+            return ecb(plaintext,key);
+        } else if (mode == 1) {
+            return cbc(plaintext,key,initializationVector);
+        } else if (mode == 2) {
+            return cfb(plaintext,key,initializationVector);
+        } else if (mode == 3) {
+            return ofb(plaintext,key,initializationVector);
+        } else if (mode == 4) {
+            return ctr(plaintext,key,initializationVector);
+        } else return ("Invalid mode");
     }
 
-    private static void decrypt(String ciphertext, String key, String initializationVector, int mode) {
-
+    private static String decrypt(String ciphertext, String key, String initializationVector, int mode) {
+        if(mode == 0) {
+            return ecbDecrypt(ciphertext,key);
+        } else if (mode == 1) {
+            return cbcDecrypt(ciphertext,key,initializationVector);
+        } else if (mode == 2) {
+            return cfbDecrypt(ciphertext,key,initializationVector);
+        } else if (mode == 3) {
+            return ofbDecrypt(ciphertext,key,initializationVector);
+        } else if (mode == 4) {
+            return ctrDecrypt(ciphertext,key,initializationVector);
+        } else return ("Invalid mode");
     }
     //----------------BLOCK CIPHER METHODS--------------------------------
     private static ArrayList<String> createBlocks(String binaryText){
@@ -133,10 +171,13 @@ public class BlockCipherModes {
         String editedtext = addNullChar(plaintext);
         editedtext = stringTo7Bit(editedtext);
 
+        System.out.println("Plaintext binary:\n" + editedtext);
+
         ArrayList<String> blocks = createBlocks(editedtext);
         String cipherText ="";
 
         for(int i =0; i < blocks.size();i++){
+            System.out.println("Block " + i + ": " + blocks.get(i));
             cipherText = cipherText + blockCipher(blocks.get(i), binaryKey);
         }
         return cipherText;
@@ -379,7 +420,7 @@ public class BlockCipherModes {
     private static String charTo7bit(int valueOfChar){ //does the padding for stringTo7Bit
         String binaryString = Integer.toBinaryString(valueOfChar);
         if(binaryString.length() > 7){
-            return "Something went very wrong"; 
+            return binaryString.substring(binaryString.length()-7);
         }
         while(binaryString.length() < 7 ){
             binaryString = "0" + binaryString;
