@@ -1,5 +1,0 @@
-00000000000000111000000000000000000
-keyek
-first line of plain text
-time for another haiku
-hope it goes okay
