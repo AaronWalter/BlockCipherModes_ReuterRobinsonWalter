@@ -17,8 +17,8 @@ public class BlockCipherModes {
         int encrypt = Integer.parseInt(args[2]);
         //encrypt 0 = only encrypt
         //encrypt 1 = only decrypt
-        //encrypt 2 = encrypt a text, then decrypt it, checking that the result is the original plaintext
-        //encrypt 3 = perform the analysis for task 4
+        //encrypt 2 = encrypt a text, then decrypt it, checking that the result is the original plaintext (all modes)
+        //encrypt 3 = perform the analysis for task 4 (all modes)
 
         try {
             File toRead = new File(inFileName);
@@ -47,32 +47,40 @@ public class BlockCipherModes {
                 System.out.println("Result of decryption:\n" + decipherText);
                 System.out.println("Decryption to plaintext:\n" + binaryToString(decipherText));
             } else if (encrypt == 2) {
-                String cipherText = encrypt(plaintext,binaryKey,iv,mode);
-                System.out.println("Result of encryption:\n" + cipherText);
-                String decipherText = decrypt(cipherText,binaryKey,iv,mode);
-                System.out.println("Result of decryption:\n" + decipherText);
-                System.out.println("Decryption to plaintext:\n" + binaryToString(decipherText));
-                System.out.println(stringTo7Bit(plaintext).equals(decipherText));
-                System.out.println(plaintext.equals(binaryToString(decipherText)));
+                for(int i = 0; i<5; i++) {
+                    String cipherText = encrypt(plaintext, binaryKey, iv, i);
+                    System.out.println("Result of encryption:\n" + cipherText);
+                    String decipherText = decrypt(cipherText, binaryKey, iv, i);
+                    System.out.println("Result of decryption:\n" + decipherText);
+                    System.out.println("Decryption to plaintext:\n" + binaryToString(decipherText));
+                    System.out.println(stringTo7Bit(plaintext).equals(decipherText));
+                    System.out.println(binaryToString(stringTo7Bit(plaintext)).equals(binaryToString(decipherText)));
+                }
             } else if (encrypt == 3) {
                 for(int i = 0; i < 5; i++) {
                     System.out.println("Mode " + i + ":");
                     String cipherText = encrypt(plaintext,binaryKey,iv,i);
+                    System.out.println("Encryption result:\n" + cipherText);
                     String errorText = changeBitInBinaryText(cipherText);
                     String decipherText = decrypt(cipherText,binaryKey,iv,i);
                     String decipherError = decrypt(errorText,binaryKey,iv,i);
+                    System.out.println("Normal decryption:\n" + decipherText);
+                    System.out.println("Decryption with error:\n" + decipherError);
                     ArrayList<String> aBlocks = createBlocks(decipherText);
                     ArrayList<String> bBlocks = createBlocks(decipherError);
                     int totalErrors = 0;
                     int blocksChanged = 0;
                     for(int j = 0; j<aBlocks.size(); j++) {
-                        String a = aBlocks.get(i);
-                        String b = bBlocks.get(i);
+                        String a = aBlocks.get(j);
+                        String b = bBlocks.get(j);
+                        //System.out.println("Regular block: " +a);
+                        //System.out.println("Error block: " +b);
                         String result = xorStrings(a,b);
+                        //System.out.println("result: " + result);
                         int blockErrors = 0;
                         boolean blockError = false;
-                        for(int k = 0; k<a.length(); k++) {
-                            if (String.valueOf(result.charAt(k)) == "1") {
+                        for(int k = 0; k<result.length(); k++) {
+                            if (result.charAt(k) == '1') {
                                 blockErrors += 1;
                                 blockError = true;
                             }
@@ -171,13 +179,13 @@ public class BlockCipherModes {
         String editedtext = addNullChar(plaintext);
         editedtext = stringTo7Bit(editedtext);
 
-        System.out.println("Plaintext binary:\n" + editedtext);
+        //System.out.println("Plaintext binary:\n" + editedtext);
 
         ArrayList<String> blocks = createBlocks(editedtext);
         String cipherText ="";
 
         for(int i =0; i < blocks.size();i++){
-            System.out.println("Block " + i + ": " + blocks.get(i));
+            //System.out.println("Block " + i + ": " + blocks.get(i));
             cipherText = cipherText + blockCipher(blocks.get(i), binaryKey);
         }
         return cipherText;
@@ -381,7 +389,7 @@ public class BlockCipherModes {
                 numberOfDifferences++;
             }
         }
-       System.out.println("Result of xoring the two plaintexts " + result2);
+        System.out.println("Result of xoring the two plaintexts " + result2);
         return numberOfDifferences;
     }
 
@@ -452,7 +460,7 @@ public class BlockCipherModes {
         else {
             binaryText = zero + binaryText.substring(1);
         }
-        System.out.println("Changed BinaryText" + binaryText);
+        //System.out.println("Changed BinaryText" + binaryText);
     return binaryText;
     }
 
