@@ -7,17 +7,14 @@ import java.util.Random;
 public class BlockCipherModes {
 
     public static void main(String[] args) {
-        //String inFileName = "src\\"+args[0];
-       String  inFileName = "src\\cbcToDecrypt.txt";
-        // String  inFileName = "src\\cbcData.txt";
-       int mode = 6;
-       //mode 0 = ecb
+        String inFileName = "src\\"+args[0];
+        int mode = Integer.parseInt(args[1]);
+        int encrypt = Integer.parseInt(args[2]);
+        //mode 0 = ecb
         //mode 1 = cbc
         //mode 2 = cfb
         //mode 3 = ofb
         //mode 4 = ctr
-        //mode 5 decyrpt a specified ofb encryption
-        //mode 6 decrypt cbc encryption
         try {
             File toRead = new File(inFileName);
             Scanner sc = new Scanner(toRead);
@@ -27,48 +24,58 @@ public class BlockCipherModes {
             while(sc.hasNextLine()) {
                 plaintext += sc.nextLine();// I think nextLine should be used to preserve spaces
             }
-            System.out.println(plaintext.length());
+            /*System.out.println(plaintext.length());
             System.out.println("IV: "+ iv);
-            System.out.println("KEY: "+key);
+            System.out.println("KEY: "+key);*/
             String binaryKey = key;
             if(key.length()< 35){
                 binaryKey = stringTo7Bit(key);
             }
-            System.out.println(binaryKey);
-            System.out.println(plaintext);
+            /*System.out.println(binaryKey);
+            System.out.println(plaintext);*/
 
             String cipherText = "";
             String decipherText = "";
-            if (mode == 0) {
-                cipherText = ecb(plaintext, binaryKey);
+            if (mode == 0) { //ecb
+                if(encrypt == 0) {
+                    cipherText = ecb(plaintext, binaryKey);
+                } else {
+                    decipherText = ecbDecrypt(plaintext,binaryKey);
+                }
             } else if (mode == 1) {
-                String newiv = generateRandomIV();
-                cipherText = cbc(plaintext, binaryKey, newiv);
-                String decipheredPlainTextBinary = cbcDecrypt(cipherText, binaryKey, newiv);
-                String decipheredPlainText = binaryToString(decipheredPlainTextBinary);
-                System.out.println(decipheredPlainText);
+                //String newiv = generateRandomIV();
+                if(encrypt == 0) {
+                    cipherText = cbc(plaintext, binaryKey, iv);
+                } else {
+                    String plainTextBinary = cbcDecrypt(cipherText, binaryKey, iv);
+                }
             } else if (mode == 2) {
-                cipherText = cfb(plaintext, binaryKey);
+                if(encrypt == 0) {
+                    cipherText = cfb(plaintext, binaryKey, iv);
+                } else {
+                    decipherText = cfbDecrypt(plaintext, binaryKey, iv);
+                }
             } else if (mode == 3) {
-               cipherText = ofb(plaintext, binaryKey);
+                if (encrypt == 0) {
+                    cipherText = ofb(plaintext, binaryKey, iv);
+                } else {
+                    decipherText = ofbDecrypt(plaintext,binaryKey,iv);
+                }
             } else if (mode == 4) {
-                //cipherText = ctr(plaintext, binaryKey);
-            } else if(mode == 5) {
-                decryptOFB(plaintext, iv, binaryKey);
-            } else if(mode == 6){
-                cbcDecrypt(plaintext, binaryKey, iv);
-            }
-            else {
+                if (encrypt == 0) {
+                    cipherText = ctr(plaintext, binaryKey, iv);
+                } else
+                    decipherText = ctrDecrypt(plaintext,binaryKey,iv);
+            } else {
                 System.out.println("Invalid mode");
             }
-            System.out.println(cipherText);
 
             //cipherText = decipherBlock(cipherText, binaryKey);
-           // System.out.println(cipherText +" " + binaryToString(cipherText));
+            // System.out.println(cipherText +" " + binaryToString(cipherText));
 
 
-           // String originalText = binaryToString(binaryText);
-          //  System.out.println(originalText +"\n" + plaintext.equals(originalText));
+            // String originalText = binaryToString(binaryText);
+            //  System.out.println(originalText +"\n" + plaintext.equals(originalText));
         } catch(FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -132,15 +139,16 @@ public class BlockCipherModes {
         for(int i =0; i < blocks.size();i++){
             cipherText = cipherText + blockCipher(blocks.get(i), binaryKey);
         }
-        System.out.println("CIPHER " + cipherText +" " + binaryToString(cipherText));
-        blocks.clear();
-        blocks = createBlocks(cipherText);
-        String decipherText = "";
-        for(int i = 0; i <blocks.size();i++){
-            decipherText = decipherText + decipherBlock(blocks.get(i),binaryKey);
-        }
-        System.out.println(decipherText + " " + binaryToString(decipherText));
         return cipherText;
+    }
+
+    private static String ecbDecrypt(String cipherText, String binaryKey) {
+        ArrayList<String> blocks = createBlocks(cipherText);
+        String plainText = "";
+        for(int i = 0; i <blocks.size();i++){
+            plainText = plainText + decipherBlock(blocks.get(i),binaryKey);
+        }
+        return plainText;
     }
 
     private static String cbc(String plaintext, String binaryKey, String iv) {
@@ -172,96 +180,102 @@ public class BlockCipherModes {
             nextIV = blocks.get(i);
             plaintext += plaintextChunk;
         }
-        System.out.println("Decrypted: "+binaryToString(plaintext));
         return plaintext;
     }
 
-    private static String cfb(String plaintext, String binaryKey) {
+    private static String cfb(String plaintext, String binaryKey, String iv) {
         String editedtext = addNullChar(plaintext);
         editedtext = stringTo7Bit(editedtext);
 
         ArrayList<String> blocks = createBlocks(editedtext);
         String cipherText ="";
 
-        String updatedIV = generateRandomIV();
-        String originalIV = updatedIV;
+        /*String updatedIV = generateRandomIV();
+        String originalIV = updatedIV;*/
+
+        String nextIV = iv;
 
         for(int i =0; i < blocks.size();i++) { 
             // XOR IV and Key
-            String encryptedIV = blockCipher(updatedIV, binaryKey);
+            String encryptedIV = blockCipher(nextIV, binaryKey);
 
             String encryptedText = xorStrings(blocks.get(i), encryptedIV);
             
-            updatedIV = encryptedText;
+            nextIV = encryptedText;
             cipherText = cipherText + encryptedText;
         }
-        System.out.println(cipherText +" " + binaryToString(cipherText));
-        blocks.clear();
-        blocks = createBlocks(cipherText);
-        updatedIV = originalIV;
-        String decipherText = "";
-        for(int i =0; i < blocks.size();i++) { 
-            // XOR IV and Key
-            String encryptedIV = blockCipher(updatedIV, binaryKey);
-
-            // Get a block from the blockCIpher
-            String encryptedText = xorStrings(blocks.get(i), encryptedIV);
-
-            // XOR IV and 35 bits from the plaintext
-            updatedIV = blocks.get(i);
-            decipherText = decipherText + encryptedText;
-            updatedIV = xorStrings(blocks.get(i), binaryKey);
-            decipherText = decipherText + updatedIV;
-        }
-        System.out.println("DECIPHERED: "  + " " + binaryToString(decipherText));
         return cipherText;
     }
 
-    private static String ofb(String plaintext, String binaryKey) {
+    private static String cfbDecrypt(String cipherText,String binaryKey,String iv) {
+        ArrayList<String> blocks = createBlocks(cipherText);
+        String nextIV = iv;
+        String decipherText = "";
+        for(int i =0; i < blocks.size();i++) {
+            // XOR IV and Key
+            String result = blockCipher(nextIV, binaryKey);
+
+            // Get a block from the blockCIpher
+            String encryptedText = xorStrings(blocks.get(i), result);
+
+            // XOR IV and 35 bits from the plaintext
+            decipherText = decipherText + encryptedText;
+            nextIV = blocks.get(i);
+        }
+        return decipherText;
+    }
+
+    private static String ofb(String plaintext, String binaryKey, String iv) {
         String editedtext = stringTo7Bit(plaintext);
 
         ArrayList<String> blocks = createBlocks(editedtext);
         String cipherText ="";
 
-        String updatedIV = generateRandomIV();
-        String originalIV = updatedIV;
-        System.out.println("IV: " + originalIV);
+        String nextIV = iv;
         for(int i =0; i < blocks.size();i++) { 
             // XOR IV and Key 
-            String encryptedIV = blockCipher(updatedIV, binaryKey);
-            updatedIV = encryptedIV;
+            String encryptedIV = blockCipher(nextIV, binaryKey);
+            nextIV = encryptedIV;
 
             // XOR IV and 35 bits from the plaintext
             String encryptedText = xorStrings(blocks.get(i), encryptedIV);
 
             cipherText = cipherText + encryptedText;
         }
-        System.out.println(" CIPHER " + cipherText + "\n" + binaryToString(cipherText));
-        System.out.println("DECRYPTED " + decryptOFB(cipherText, originalIV, binaryKey) +"\n");
         return cipherText;
     }
-    private static String decryptOFB(String cipher, String IV, String key){
+    private static String ofbDecrypt(String cipherText, String binaryKey, String iv){
         String decipherText = "";
-        ArrayList<String> blocks = createBlocks(cipher);
-        String updatedIV = IV;
+        ArrayList<String> blocks = createBlocks(cipherText);
+        String nextIV = iv;
 
         for(int i =0; i < blocks.size();i++) {
             // XOR IV and Key
-            String encryptedIV = blockCipher(updatedIV, key);
-            updatedIV = encryptedIV;
+            String encryptedIV = blockCipher(nextIV, binaryKey);
+            nextIV = encryptedIV;
 
             // XOR IV and 35 bits from the plaintext
             String encryptedText = xorStrings(blocks.get(i), encryptedIV);
 
             decipherText = decipherText + encryptedText;
         }
-        System.out.println( "DECIPHER TEXT"+ " " + binaryToString(decipherText));
-        System.out.println(decipherText);
         return decipherText;
     }
 
-    private static String ctr(String plaintext, String binaryKey) {
-        return "";
+    private static String ctr(String plaintext, String binaryKey, String iv) {
+        //String iv = generateRandomIV();
+        int count = 0;
+        String cipherText = "";
+        iv = makeCountStr(iv,0);
+        String binText = stringTo7Bit(plaintext);
+        ArrayList<String> binStrings = createBlocks(binText);
+        for (String s : binStrings) {
+            String result = blockCipher(iv,binaryKey);
+            cipherText += xorStrings(s,result);
+            count += 1;
+            iv = makeCountStr(iv,count);
+        }
+        return cipherText;
     }
 
     private static String ctrDecrypt(String cipherBinText, String binaryKey, String iv) {
@@ -278,15 +292,15 @@ public class BlockCipherModes {
         return plaintext;
     }
 
-        private static String makeCountStr(String iv, int count) {
-            count = count % (2^16);
-            String countStr = Integer.toBinaryString(count);
-            if (countStr.length() < 16) {
-                countStr = "0".repeat(16 - countStr.length()) + countStr;
-            }
-            iv = iv.substring(0, 19) + countStr;
-            return iv;
+    private static String makeCountStr(String iv, int count) {
+        count = count % (2^16);
+        String countStr = Integer.toBinaryString(count);
+        if (countStr.length() < 16) {
+            countStr = "0".repeat(16 - countStr.length()) + countStr;
         }
+        iv = iv.substring(0, 19) + countStr;
+        return iv;
+    }
 
     //DECRYPTION//
     private static String unShiftBlock(String block){// same process as shiftblock
