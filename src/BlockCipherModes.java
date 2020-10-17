@@ -29,9 +29,7 @@ public class BlockCipherModes {
             while(sc.hasNextLine()) {
                 plaintext += sc.nextLine();// I think nextLine should be used to preserve spaces
             }
-            /*System.out.println(plaintext.length());
-            System.out.println("IV: "+ iv);
-            System.out.println("KEY: "+key);*/
+      
             String binaryKey = key;
             if(key.length()< 35){
                 binaryKey = stringTo7Bit(key);
@@ -88,12 +86,6 @@ public class BlockCipherModes {
                 }
             }
 
-            //cipherText = decipherBlock(cipherText, binaryKey);
-            // System.out.println(cipherText +" " + binaryToString(cipherText));
-
-
-            // String originalText = binaryToString(binaryText);
-            //  System.out.println(originalText +"\n" + plaintext.equals(originalText));
         } catch(FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -158,7 +150,7 @@ public class BlockCipherModes {
     private static String shiftBlock(String block){// shifts a block by 3
         if(block.length() < 35){
             return "failure";
-        }// this shift is actually a swap but does the same thing inpractice
+        }// this shift is actually a swap but does the same thing in practice
         String first32 = block.substring(0,32);
         String last3 = block.substring(32,35);
         String shifted =  last3 + first32;
@@ -200,9 +192,9 @@ public class BlockCipherModes {
         String ciphertext = "";
         String nextIV = iv;
 
-        for(int i = 0; i<blocks.size(); i++) {
-            String xored = xorStrings(blocks.get(i), nextIV);
-            String result = blockCipher(xored, binaryKey);
+        for(int i = 0; i < blocks.size(); i++) {
+            String encryptedIV = xorStrings(blocks.get(i), nextIV);
+            String result = blockCipher(encryptedIV, binaryKey);
             nextIV = result;
             ciphertext += result;
         }
@@ -231,9 +223,6 @@ public class BlockCipherModes {
         ArrayList<String> blocks = createBlocks(editedtext);
         String cipherText ="";
 
-        /*String updatedIV = generateRandomIV();
-        String originalIV = updatedIV;*/
-
         String nextIV = iv;
 
         for(int i =0; i < blocks.size();i++) { 
@@ -254,10 +243,9 @@ public class BlockCipherModes {
         String decipherText = "";
         for(int i =0; i < blocks.size();i++) {
             // XOR IV and Key
-            String result = blockCipher(nextIV, binaryKey);
+            String encryptedIV = blockCipher(nextIV, binaryKey);
 
-            // Get a block from the blockCIpher
-            String encryptedText = xorStrings(blocks.get(i), result);
+            String encryptedText = xorStrings(blocks.get(i), encryptedIV);
 
             // XOR IV and 35 bits from the plaintext
             decipherText = decipherText + encryptedText;
@@ -304,7 +292,6 @@ public class BlockCipherModes {
     }
 
     private static String ctr(String plaintext, String binaryKey, String iv) {
-        //String iv = generateRandomIV();
         int count = 0;
         String cipherText = "";
         iv = makeCountStr(iv,0);
